@@ -26,9 +26,9 @@ export interface SignupDto {
   email: string;
   password: string;
   confirmPassword: string;
-  phone?: string;
-  age?: number;
-  gender?: UserGender;
+  phone: string;
+  age: number;
+  gender: UserGender;
   role?: UserRole;
 }
 

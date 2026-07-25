@@ -9,9 +9,14 @@ export const axiosClient = axios.create({
 
 // Attach JWT token to every request
 axiosClient.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().token;
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const publicEndpoints = ['/auth/login', '/auth/signup', '/auth/verify-otp', '/auth/forgot-password', '/auth/reset-password'];
+  const isPublicEndpoint = publicEndpoints.some((endpoint) => config.url?.includes(endpoint));
+
+  if (!isPublicEndpoint) {
+    const token = useAuthStore.getState().token;
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });
@@ -21,7 +26,9 @@ axiosClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+    const isAuthRequest = originalRequest?.url?.includes('/auth/');
+
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthRequest) {
       originalRequest._retry = true;
       try {
         const refreshToken = useAuthStore.getState().refreshToken;

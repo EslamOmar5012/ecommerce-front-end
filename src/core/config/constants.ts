@@ -1,6 +1,7 @@
-export const API_BASE_URL =
+export const API_BASE_URL = (
   import.meta.env.VITE_API_URL ||
-  "https://ecommerce-back-end-production-621a.up.railway.app";
+  "https://ecommerce-back-end-production-af56.up.railway.app"
+).replace(/\/+$/, "");
 
 export const APP_NAME = "Xeno Store";
 export const DEFAULT_PAGE_LIMIT = 12;

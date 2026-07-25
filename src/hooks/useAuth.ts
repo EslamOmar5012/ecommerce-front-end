@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 import { useAuthStore } from '../store/useAuthStore';
 import {
@@ -12,6 +13,7 @@ import {
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { setAuth, setUser, isAuthenticated } = useAuthStore();
 
   const useLoginMutation = () =>
@@ -35,7 +37,17 @@ export const useAuth = () => {
         }
       },
       onError: (err: any) => {
-        const msg = err.response?.data?.message || 'Login failed. Check your credentials.';
+        const payload = err.response?.data;
+        const requiresVerification = payload?.requiresVerification || payload?.error === 'EmailNotVerified';
+
+        if (requiresVerification) {
+          const email = err.config?.data ? JSON.parse(err.config.data).email : '';
+          navigate('/verify-otp', { state: { email } });
+          toast.error(payload?.message || 'Please verify your email before logging in.');
+          return;
+        }
+
+        const msg = payload?.message || 'Login failed. Check your credentials.';
         toast.error(msg);
       },
     });
